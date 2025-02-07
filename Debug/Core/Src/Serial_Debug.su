@@ -1,0 +1,3 @@
+../Core/Src/Serial_Debug.c:13:6:HAL_UART_RxCpltCallback	16	static
+../Core/Src/Serial_Debug.c:21:6:initSD	8	static
+../Core/Src/Serial_Debug.c:25:6:uprintf	16	static
