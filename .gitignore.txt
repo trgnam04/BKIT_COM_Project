@@ -1,0 +1,13 @@
+.metadata/
+.settings/
+[Rr]elease/
+[Dd]ebug/
+Driver/
+*.nguye.workspace
+*.pdsbak
+*.PDF
+*.launch
+*.project
+*.mxproject
+*.cproject
+*.ld
