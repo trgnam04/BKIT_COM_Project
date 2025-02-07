@@ -97,9 +97,7 @@ int main(void)
   MX_SPI2_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim2);
-  initSD();
-  setTimer(0, 1000);
+
 
 
   /* USER CODE END 2 */
@@ -111,10 +109,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  if(isFlag(0)){
-		  uprintf("Hello\r\n");
-		  setTimer(0, 1000);
-	  }
   }
   /* USER CODE END 3 */
 }
