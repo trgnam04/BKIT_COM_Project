@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "crc.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -27,7 +28,8 @@
 /* USER CODE BEGIN Includes */
 #include "timer.h"
 #include "Serial_Debug.h"
-
+#include "Application_Layer.h"
+#include "data_type.pb.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,6 +98,7 @@ int main(void)
   MX_SPI1_Init();
   MX_SPI2_Init();
   MX_USART2_UART_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
 
 
@@ -104,11 +107,19 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  sensor_data_t data;
+  data.data = 1000;
+  data.function_code = 0x01;
+  data.sensor_id = 12345;
+
+  uint8_t function_code = 0x01;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  HAL_UART_Transmit(&huart2, (uint8_t*)"hehe", 4, 1000);
+	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
