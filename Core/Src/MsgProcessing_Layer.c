@@ -101,25 +101,26 @@ uint16_t MSGPROCESSING_ReceiveMessage(uint8_t* message, size_t* message_length)
 	// TODO: call BKIT_HW_RECEIVE to get raw data
 	// check receive state
 	uint8_t recv_package[] = {
-	    0x00, 0x33, 0x01, 0x62, 0x9E, 0x25, 0xC4, 0x12, 0x5B, 0x8B, 0x3B, 0x13,
-	    0x31, 0x48, 0x33, 0x7E, 0xCA, 0x54, 0x12, 0x6A, 0x3C, 0xF3, 0x8F, 0xAA,
+	    0x00, 0x33, 0x01,
+		0x62, 0x9E, 0x25, 0xC4, 0x12, 0x5B, 0x8B, 0x3B, 0x13, 0x31, 0x48, 0x33, 0x7E, 0xCA, 0x54, 0x12,
+		0x6A, 0x3C, 0xF3, 0x8F, 0xAA,
 	    0xCE, 0xF5, 0x63, 0xAE, 0xBC, 0xBF, 0x76, 0x20, 0x32, 0xDF, 0xBF, 0x46,
 	    0x73, 0x14, 0x1D, 0x66, 0x45, 0x09, 0x2C, 0xB3, 0x14, 0xDB, 0x90, 0x6C,
 	    0xFF, 0x73, 0xB1
 	};
 	uint16_t recv_package_size = sizeof(recv_package);
 
-	if(!0){
-		// ERROR: receive fail
-		return ERR_HW_RECEIVE;
-	}
+//	if(!0){
+//		// ERROR: receive fail
+//		return ERR_HW_RECEIVE;
+//	}
 	// check received length
 	if(recv_package_size < HEADER_SIZE){
 		// ERROR: Data missing when transfer
 		return ERR_DATA_MISSING;
 	}
 	uint16_t calc_package_size = recv_package[0];
-	calc_package_size = (calc_package_size << 8) & recv_package[1];
+	calc_package_size = (calc_package_size << 8) | recv_package[1];
 	if(calc_package_size != recv_package_size){
 		// ERROR: Data missing when transfer
 		return ERR_DATA_MISSING;
@@ -170,7 +171,7 @@ uint16_t MSGPROCESSING_ReceiveMessage(uint8_t* message, size_t* message_length)
 			CMOX_AESFAST_CBC_DEC_ALGO,
 			aes_cipher, aes_cipher_size, // input: cipher text
 			key, CMOX_CIPHER_128_BIT_KEY, // key
-			NULL, 0,
+			iv, sizeof(iv),
 			message, &decrypt_len
 		);
 	if(aes_retval != CMOX_CIPHER_SUCCESS){

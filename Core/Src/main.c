@@ -108,9 +108,12 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   sensor_data_t data;
-  data.data = 1000;
-  data.function_code = 0x01;
-  data.sensor_id = 12345;
+//  data.data = 1000;
+//  data.function_code = 0x01;
+//  data.sensor_id = 12345;
+  	data.data = 5;
+    data.function_code = 0x05;
+    data.sensor_id = 5;
 
   uint8_t function_code = 0x01;
   while (1)
@@ -118,8 +121,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_UART_Transmit(&huart2, (uint8_t*)"hehe", 4, 1000);
-	  HAL_Delay(1000);
+//	  HAL_UART_Transmit(&huart2, (uint8_t*)"hehe", 4, 1000);
+	  BKIT_ReceiveMessage(&data);
+	  HAL_Delay(5000);
   }
   /* USER CODE END 3 */
 }
