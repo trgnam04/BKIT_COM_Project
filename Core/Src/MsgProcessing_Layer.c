@@ -6,8 +6,9 @@
  */
 #include "MsgProcessing_Layer.h"
 
-unsigned char key[16] = "bkitk2022maidinh";
-unsigned char hmac_key[6] = "cookdl";
+unsigned char key[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+unsigned char hmac_key[6] = {1, 2, 3, 4, 5, 6};
+unsigned char iv[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
 // TEST DATA
 // message: xinchao
@@ -15,6 +16,7 @@ unsigned char hmac_key[6] = "cookdl";
 // size_t data_size = 100;
 uint16_t MSGPROCESSING_SendMessage(uint32_t* salve_address, uint8_t * function_code, uint8_t* message, size_t* message_length)
 {
+
 	// Send without encrypt (send key)
 	if(*function_code != FC_DATA){
 		uint16_t package_size = HEADER_SIZE + *message_length;
@@ -32,13 +34,27 @@ uint16_t MSGPROCESSING_SendMessage(uint32_t* salve_address, uint8_t * function_c
 	uint8_t sha2_out[CMOX_SHA256_SIZE];
 	size_t aes_outlen, sha2_outlen;
 
+//	char uart_message[50] = {0};
+//	for (size_t i = 0; i < *message_length; i++) {
+//	    char hexStr[6]; // Buffer to hold "0xXX " (5 characters + null terminator)
+//	    sprintf(hexStr, "0x%02X ", message[i]);
+//	    HAL_UART_Transmit(&huart2, (uint8_t*)hexStr, strlen(hexStr), HAL_MAX_DELAY);
+//	}
+//	sprintf(uart_message, "Message length: %u", (unsigned int)*message_length);
+//	HAL_UART_Transmit(&huart2, (uint8_t*)uart_message, strlen(uart_message), HAL_MAX_DELAY);
+
+	// padding message
+	uint8_t padded_mesage[*message_length + 16];
+	size_t padded_message_length = add_pkcs7_padding(message, *message_length, padded_mesage, 16);
+
 	cmox_cipher_retval_t aes_retval = cmox_cipher_encrypt(
 			CMOX_AESFAST_CBC_ENC_ALGO,
-			message, *message_length, // input
+			padded_mesage, padded_message_length, // input
 			key, CMOX_CIPHER_128_BIT_KEY, // key
-			NULL, 0,
+			iv, sizeof(iv),
 			aes_out, &aes_outlen // output
 		);
+
 	if(aes_retval != CMOX_CIPHER_SUCCESS || aes_outlen % 16 != 0){
 		// ERROR: Encrypt fail
 		return ERR_AES_ENCRYPT;
@@ -80,10 +96,19 @@ uint16_t MSGPROCESSING_SendMessage(uint32_t* salve_address, uint8_t * function_c
 };
 uint16_t MSGPROCESSING_ReceiveMessage(uint8_t* message, size_t* message_length)
 {
-	uint8_t recv_package[MAX_PACKAGE_SIZE];
-	uint16_t recv_package_size;
+//	uint8_t recv_package[MAX_PACKAGE_SIZE];
+//	uint16_t recv_package_size;
 	// TODO: call BKIT_HW_RECEIVE to get raw data
 	// check receive state
+	uint8_t recv_package[] = {
+	    0x00, 0x33, 0x01, 0x62, 0x9E, 0x25, 0xC4, 0x12, 0x5B, 0x8B, 0x3B, 0x13,
+	    0x31, 0x48, 0x33, 0x7E, 0xCA, 0x54, 0x12, 0x6A, 0x3C, 0xF3, 0x8F, 0xAA,
+	    0xCE, 0xF5, 0x63, 0xAE, 0xBC, 0xBF, 0x76, 0x20, 0x32, 0xDF, 0xBF, 0x46,
+	    0x73, 0x14, 0x1D, 0x66, 0x45, 0x09, 0x2C, 0xB3, 0x14, 0xDB, 0x90, 0x6C,
+	    0xFF, 0x73, 0xB1
+	};
+	uint16_t recv_package_size = sizeof(recv_package);
+
 	if(!0){
 		// ERROR: receive fail
 		return ERR_HW_RECEIVE;
@@ -140,18 +165,21 @@ uint16_t MSGPROCESSING_ReceiveMessage(uint8_t* message, size_t* message_length)
 	};
 
 	// AES decrypt message
+	size_t decrypt_len;
 	cmox_cipher_retval_t aes_retval = cmox_cipher_decrypt(
 			CMOX_AESFAST_CBC_DEC_ALGO,
 			aes_cipher, aes_cipher_size, // input: cipher text
 			key, CMOX_CIPHER_128_BIT_KEY, // key
 			NULL, 0,
-			message, message_length
+			message, &decrypt_len
 		);
 	if(aes_retval != CMOX_CIPHER_SUCCESS){
 		// ERROR: Decrypt fail
 		return ERR_AES_DECRYPT;
 	};
 	// successful
+	*message_length = remove_pkcs7_padding(message, decrypt_len);
+	HAL_UART_Transmit(&huart2, message, *message_length, HAL_MAX_DELAY);
 	return 0;
 };
 

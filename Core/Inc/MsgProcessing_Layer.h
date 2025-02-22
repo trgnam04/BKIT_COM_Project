@@ -13,6 +13,7 @@
 #include "string.h"
 #include "cmox_crypto.h" // for AES
 #include "usart.h"
+#include "pkcs7_padding.h"
 
 #define MAX_MESSAGE_SIZE 1024 // byte
 #define HEADER_SIZE 3 // byte
